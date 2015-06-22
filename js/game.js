@@ -156,10 +156,20 @@ $(function() {
 			$('#hero').attr('class', game.hero.skin);
 			//run idle sprite
 			game.idleAnimation.play();
+			console.log("game.blastLevel: " + game.blastLevel);
+			if(game.blastLevel == 0){
+				//animate the powerFrame out Early
+				var powerFrameIntro = TweenMax.to($('.powerFrame'), 0.2, {opacity: 0, width: "180px", height: "180px", margin: "0 0 0 -58",
+				backgroundColor: "rgba(255, 255, 255, 0)" /*boxShadow: "inset 0px 0px 10px 10px rgb(164, 255, 245)"*/});
+			}else{
+				console.log("entered Else for Blast");
+				//animate the powerFrame out after Blast
+				var powerFrameIntro = TweenMax.to($('.powerFrame'), 0.2, {opacity: 0,
+				backgroundColor: "rgba(255, 255, 255, 0)" /*boxShadow: "inset 0px 0px 10px 10px rgb(164, 255, 245)"*/});
+				game.blastLevel = 0;
+			}
+			$('.powerFrame').attr('class','powerFrame');
 			
-			//animate the powerFrame out
-			var powerFrameIntro = TweenMax.to($('.powerFrame'), 0.2, {opacity: 0, width: "180px", height: "180px", margin: "0 0 0 -58",
-			backgroundColor: "rgba(255, 255, 255, 0)" /*boxShadow: "inset 0px 0px 10px 10px rgb(164, 255, 245)"*/});
 		},
 		heroJump: function(){
 			console.log("heroJump entered ");
@@ -234,7 +244,6 @@ $(function() {
 						.to(blastFrame, 0.3, {backgroundColor: "red"})
 						.to(blastFrame, 0.3, {backgroundColor: "teal"})
 						.to(blastFrame, 0.3, {backgroundColor: "white", opacity: 0});
-					game.blastLevel = 0;
 					break;
 			
 					case 2: // call blast lvl 2
