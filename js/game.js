@@ -32,6 +32,7 @@ $(function() {
 			this.chargeLevel = 0;
 			this.fireBallTimer = '';
 			this.idleAnimation = '';
+			this.blastLevel = 0; 
 		},
 		setupArrays: function(){
 			
@@ -139,21 +140,26 @@ $(function() {
 			console.log(e.which  + ' was pressed for ' + duration + ' seconds');
 			game.charged[e.which] = 0;
 			
-			clearTimeout(game.fireBallTimer);
-			
-			//move the skin to idle
-			$('#hero').attr('class',game.hero.skin);
-			//run idle sprite
-			game.idleAnimation.play();
-			//animate the powerFrame out
-			var powerFrameIntro = TweenMax.to($('.powerFrame'), 0.2, {opacity: 0, width: "180px", height: "180px", margin: "0 0 0 -58",
-			backgroundColor: "rgba(255, 255, 255, 0)" /*boxShadow: "inset 0px 0px 10px 10px rgb(164, 255, 245)"*/});
+			//handle what we do with the blast
+			game.fireBallBlastHandler();
+		
 		},
 		heroInactive: function(){
+			//stop the blast charger
+			clearTimeout(game.fireBallTimer);
+			
 			//reset the hero to their default state
 			TweenMax.to($('#hero'), 0.5, {
 				backgroundColor: game.hero.skin
 			});
+			//move the skin to idle
+			$('#hero').attr('class', game.hero.skin);
+			//run idle sprite
+			game.idleAnimation.play();
+			
+			//animate the powerFrame out
+			var powerFrameIntro = TweenMax.to($('.powerFrame'), 0.2, {opacity: 0, width: "180px", height: "180px", margin: "0 0 0 -58",
+			backgroundColor: "rgba(255, 255, 255, 0)" /*boxShadow: "inset 0px 0px 10px 10px rgb(164, 255, 245)"*/});
 		},
 		heroJump: function(){
 			console.log("heroJump entered ");
@@ -207,10 +213,44 @@ $(function() {
 			
 			game.fireBallTimer = setTimeout(function(){
 					TweenMax.to($('#hero'), 1, {backgroundColor: "green"});
+					game.blastLevel = 1;
 					game.fireBallTimer = setTimeout(function(){
 						TweenMax.to($('#hero'), 1, {backgroundColor: "orange"});
 					}, 1500);
 				}, 1000);		
+		},
+		fireBallBlastHandler: function(){
+			
+			if(game.blastLevel > 0){
+				//check which level it is
+				switch(game.blastLevel) {
+					case 1: // call blast lvl 1
+					console.log("blast lvl 1");
+					$('#hero').attr('class','hero-blast-t1');
+					$('.powerFrame').attr('class','powerFrame powerFrame-t1');
+					var blastTeir1 = new TimelineMax({onComplete:game.heroInactive});
+					var blastFrame = $('.blastFrame');
+					blastTeir1.to(blastFrame, 1, {backgroundColor: "orange", opacity: 0.5})
+						.to(blastFrame, 0.3, {backgroundColor: "red"})
+						.to(blastFrame, 0.3, {backgroundColor: "teal"})
+						.to(blastFrame, 0.3, {backgroundColor: "white", opacity: 0});
+					game.blastLevel = 0;
+					break;
+			
+					case 2: // call blast lvl 2
+					console.log("blast lvl 2");
+					break;
+			
+					case 3: // call blast lvl 3
+					console.log("blast lvl 3");
+					break;
+		
+					default: return; // exit this handler
+				}
+			}else{
+				//no blast, return to idle
+				game.heroInactive();
+			}			
 		},
 		chargeTimer: function(e){
 			console.log("chargeTimer called");
