@@ -240,7 +240,8 @@ $(function() {
 					$('.powerFrame').attr('class','powerFrame powerFrame-t1');
 					var blastTeir1 = new TimelineMax({onComplete:game.heroInactive});
 					var blastFrame = $('.blastFrame');
-					blastTeir1.to(blastFrame, 1, {backgroundColor: "orange", opacity: 0.5})
+					TweenMax.to($('.powerFrame'), 0.5, {opacity: 0.2});
+					blastTeir1.to(blastFrame, 1, {background: "linear-gradient(to bottom, #ffe5e5 0%,#c42525 26%,#ffc9c9 46%,#c42525 70%,#ffc4c4 100%)", opacity: 0.5})
 						.to(blastFrame, 0.3, {backgroundColor: "red"})
 						.to(blastFrame, 0.3, {backgroundColor: "teal"})
 						.to(blastFrame, 0.3, {backgroundColor: "white", opacity: 0});

@@ -14,10 +14,14 @@
 }
 
 .blastFrame{
+	left:100px;
+	margin-top:-10px;
 	width: 100%;
 	position: fixed;
 	//background-color: rgba(102, 51, 153, 0.28);
 	display: block;
+	border-radius:60px 0px 0px 60px !important;
+	z-index:2;
 }
 
 .hero-blast-t1{

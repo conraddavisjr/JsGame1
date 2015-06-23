@@ -10,9 +10,13 @@
   background-position: 0 0 !important; }
 
 .blastFrame {
+  left: 100px;
+  margin-top: -10px;
   width: 100%;
   position: fixed;
-  display: block; }
+  display: block;
+  border-radius: 60px 0px 0px 60px !important;
+  z-index: 2; }
 
 .hero-blast-t1 {
   width: 100px !important;
