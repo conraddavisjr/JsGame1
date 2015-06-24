@@ -9,20 +9,38 @@
   background-repeat: no-repeat;
   background-position: 0 0 !important; }
 
+.heroFrame {
+  opacity: 0;
+  display: block;
+  position: absolute;
+  margin: -30px 0 0 -85px;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  height: 210px;
+  width: 210px;
+  background-color: rgba(0, 231, 255, 0.29);
+  border-radius: 50%;
+  box-shadow: 0px 0px 30px -2px #0083ff;
+  clip: rect(-20px, 270px, 160px, -20px); }
+
 .blastFrame {
-  left: 100px;
-  margin-top: -10px;
+  margin: -10px 0 0 100px;
   width: 100%;
   position: fixed;
   display: block;
   border-radius: 60px 0px 0px 60px !important;
   z-index: 2; }
 
-.hero-blast-t1 {
+.hero-blast {
   width: 100px !important;
   background-image: url("../img/ryu-blast.gif");
   background-repeat: no-repeat;
   background-position: 0 0 !important; }
+
+.hero-blast-t1 {
+  background: linear-gradient(to bottom, #ffe5e5 0%, #c42525 26%, #ffc9c9 46%, #c42525 70%, #ffc4c4 100%); }
+
+.hero-blast-t2 {
+  background: linear-gradient(to bottom, #b1d8f5 0%, #e1ffff 14%, #e1ffff 30%, #e1ffff 36%, #fdffff 50%, #e1ffff 65%, #e6f8fd 71%, #e1ffff 86%, #b1d8f5 100%); }
 
 .powerFrame {
   opacity: 0;

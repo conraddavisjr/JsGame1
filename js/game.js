@@ -12,6 +12,14 @@ $(function() {
 			blastTeir3: 3000,
 			blastTeir4: 4000,
 		},
+		monsters: {
+			painElemental:{
+				height: 63,
+				width: 80,
+				skin: 'painElemental.gif',
+				class: 'painElemental'
+			}
+		},
 		environment:{
 			skin: 'black',
 			ground: 250,
@@ -32,6 +40,7 @@ $(function() {
 			this.chargeLevel = 0;
 			this.fireBallTimer = '';
 			this.idleAnimation = '';
+			this.powerFrameIntro = '';
 			this.blastLevel = 0; 
 		},
 		setupArrays: function(){
@@ -40,6 +49,8 @@ $(function() {
 		setupElements: function(){
 			this.$hero = '';
 			this.charged = {};
+			//monsters
+			this.$painElemental = '';
 		},
 		renderGame: function(){
 			//build environment
@@ -64,6 +75,17 @@ $(function() {
 				});
 				game.$hero = $('#hero');
 			;
+			//build floating painElemental monster
+			painElemental = $('<div></div>')
+				.attr({class : game.monsters.painElemental.class});
+				game.$painElemental = $(game.monsters.painElemental.class);
+			//build hero frame
+			heroFrame = $('<span></span>')
+				.attr({class: 'heroFrame'})
+				.css({ 
+				  //marginLeft": -game.hero.width
+				});
+			;
 			//build blast frame
 			blastFrame = $('<span></span>')
 				.attr({class: 'blastFrame'})
@@ -85,6 +107,8 @@ $(function() {
 			
 			//render Hero
 			$('#environment').append(hero);
+			//render HeroFrame
+			$('#environment #hero').append(heroFrame);
 			//render BlastFrame
 			$('#environment #hero').append(blastFrame);
 			//render powerFrame
@@ -126,7 +150,11 @@ $(function() {
 				
 				case 70: // "F" Fire!!
 				console.log("Fire!!");
-				game.fireBall(e);
+				if(game.blastLevel > 0){
+					//disable this button
+				}else{
+					game.fireBall(e);
+				}
 				break;
 		
 				default: return; // exit this handler for other keys
@@ -157,16 +185,20 @@ $(function() {
 			//run idle sprite
 			game.idleAnimation.play();
 			console.log("game.blastLevel: " + game.blastLevel);
+			//reset the charge animations
+			game.powerFrameIntro.pause(0, true);
 			if(game.blastLevel == 0){
 				//animate the powerFrame out Early
-				var powerFrameIntro = TweenMax.to($('.powerFrame'), 0.2, {opacity: 0, width: "180px", height: "180px", margin: "0 0 0 -58",
+				TweenMax.to($('.powerFrame'), 0.2, {opacity: 0, width: "180px", height: "180px", margin: "0 0 0 -58",
 				backgroundColor: "rgba(255, 255, 255, 0)" /*boxShadow: "inset 0px 0px 10px 10px rgb(164, 255, 245)"*/});
+				TweenMax.to($('.heroFrame'), 0.2, {opacity: 0});
 			}else{
-				console.log("entered Else for Blast");
 				//animate the powerFrame out after Blast
-				var powerFrameIntro = TweenMax.to($('.powerFrame'), 0.2, {opacity: 0,
-				backgroundColor: "rgba(255, 255, 255, 0)" /*boxShadow: "inset 0px 0px 10px 10px rgb(164, 255, 245)"*/});
+				TweenMax.to($('.powerFrame'), 0.2, {opacity: 0,
+				background: "transparent" /*boxShadow: "inset 0px 0px 10px 10px rgb(164, 255, 245)"*/});
 				game.blastLevel = 0;
+				//animate the heroFrame out after Blast
+				TweenMax.to($('.heroFrame'), 0.2, {opacity: 0});
 			}
 			$('.powerFrame').attr('class','powerFrame');
 			
@@ -204,51 +236,67 @@ $(function() {
 				game.duration = ( e.timeStamp - game.charged[e.which] ) / 1000;
 				console.log("duration: " + game.duration);
 			
-			TweenMax.to($('#hero'), 2, {backgroundColor: "blue"});
-			
 			//pause other sprites
 			game.spritesStop();
 			//add the charge image
 			$('#hero').attr('class','hero-charge-t0');
 			//animate the powerFrame in
-			var powerFrameIntro = new TimelineMax();
+			game.powerFrameIntro = new TimelineMax();
 			
-			powerFrameIntro.to($('.powerFrame'), 0.5, {
+			game.powerFrameIntro.to($('.powerFrame'), 0.5, {
 					opacity: 1, width: "30px", height: "30px", 
 					margin: "40 0 0 5", borderColor: "white", boxShadow: "inset 0px 0px 10px 10px rgba(164, 255, 245, 0.5)"
 					})
+				//level 1 Charge Animation	
 				.to($('.powerFrame'), 1.5, {boxShadow: "0px 0px 10px 10px rgba(204, 35, 25, 0.5)",
 					backgroundColor: "rgba(255, 35, 25, 0.6)", borderColor: "rgba(255,255,255,0.3)",
-					width: "40px", height: "40px", margin: "35 0 0 0"}, "+=0.5");
+					width: "40px", height: "40px", margin: "35 0 0 0"}, "+=0.5")
+				//level 2 Charge Animation
+				.to($('.powerFrame'), 1.5, {boxShadow: "0px 0px 10px 10px rgba(255, 255, 255, 0.5)",
+					backgroundColor: "rgba(155, 135, 225, 0.6)", borderColor: "rgba(255,255,255,0.3)",
+					width: "50px", height: "50px", margin: "30 0 0 -5"}, "+=0")
+				.to($('.heroFrame'), 0.1, {opacity: 1}, "-=1.5")
+				.to($('.heroFrame'), 0.1, {opacity: 0}, "-=1.4")
+				.to($('.heroFrame'), 0.1, {opacity: 1}, "-=1")
+				.to($('.heroFrame'), 0.1, {opacity: 0}, "-=0.8")
+				.to($('.heroFrame'), 0.1, {opacity: 1})
+				.to($('.heroFrame'), 0.1, {opacity: 0})
+				.to($('.heroFrame'), 1, {opacity: 1});
 			
 			game.fireBallTimer = setTimeout(function(){
-					TweenMax.to($('#hero'), 1, {backgroundColor: "green"});
+					//level 1 Charge
 					game.blastLevel = 1;
 					game.fireBallTimer = setTimeout(function(){
-						TweenMax.to($('#hero'), 1, {backgroundColor: "orange"});
+						//level 2 Charge
+						game.blastLevel = 2;
 					}, 1500);
 				}, 1000);		
 		},
 		fireBallBlastHandler: function(){
 			
 			if(game.blastLevel > 0){
-				//check which level it is
+				//set arrtibutes that will apply to any case
+				$('#hero').attr('class','hero-blast');
+				$('.powerFrame').attr('class','powerFrame powerFrame-t1');
+				var blastFrame = $('.blastFrame');
+				var heroFrame = $('.heroFrame');
+				var blastTeir = new TimelineMax({onComplete:game.heroInactive});
+				//check which level the blast is
 				switch(game.blastLevel) {
 					case 1: // call blast lvl 1
-					console.log("blast lvl 1");
-					$('#hero').attr('class','hero-blast-t1');
-					$('.powerFrame').attr('class','powerFrame powerFrame-t1');
-					var blastTeir1 = new TimelineMax({onComplete:game.heroInactive});
-					var blastFrame = $('.blastFrame');
-					TweenMax.to($('.powerFrame'), 0.5, {opacity: 0.2});
-					blastTeir1.to(blastFrame, 1, {background: "linear-gradient(to bottom, #ffe5e5 0%,#c42525 26%,#ffc9c9 46%,#c42525 70%,#ffc4c4 100%)", opacity: 0.5})
-						.to(blastFrame, 0.3, {backgroundColor: "red"})
-						.to(blastFrame, 0.3, {backgroundColor: "teal"})
+					TweenMax.to($('.powerFrame'), 0.5, {opacity: 0});
+					blastFrame.attr('class', 'blastFrame hero-blast-t1');
+					game.powerFrameIntro.pause(0, true);
+					blastTeir.to(blastFrame, 1, {opacity: 0.5})
 						.to(blastFrame, 0.3, {backgroundColor: "white", opacity: 0});
 					break;
 			
 					case 2: // call blast lvl 2
 					console.log("blast lvl 2");
+					TweenMax.to($('.powerFrame'), 0.5, {opacity: 0});
+					blastFrame.attr('class', 'blastFrame hero-blast-t2');
+					blastTeir.to(blastFrame, 1, {opacity: 0.8})
+						.to(blastFrame, 0.3, {backgroundColor: "white", opacity: 0});
 					break;
 			
 					case 3: // call blast lvl 3
