@@ -3,9 +3,18 @@
 // Vars
 $heroFrameWidth: 210px;
 
+#hero{
+	background-repeat:no-repeat;
+}
 .hero-idle{
 	background-image:url('../img/ryu-idle.gif');
-	background-repeat:no-repeat;
+	
+}
+.hero-walk{
+	background-image:url('../img/ryu-walk.gif');
+}
+.hero-jump{
+	background-image:url('../img/ryu-jump.gif');
 }
 .hero-charge-t0{
 	width:80px !important;
@@ -65,5 +74,7 @@ $heroFrameWidth: 210px;
 
 //monsters
 .painElemental{
-	
+	width:90px;
+	height:63px;
+	background-image:url('../img/painElemental.gif');
 }

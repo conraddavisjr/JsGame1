@@ -7,6 +7,8 @@ $(function() {
 			jump: 100,
 			speed: 50,
 			skin: 'hero-idle',
+			walk: 'hero-walk',
+			jump: 'hero-jump',
 			blastTeir1: 1000,
 			blastTeir2: 3500,
 			blastTeir3: 3000,
@@ -40,7 +42,9 @@ $(function() {
 			this.chargeLevel = 0;
 			this.fireBallTimer = '';
 			this.idleAnimation = '';
-			this.powerFrameIntro = '';
+			this.jumpAnimation = new TimelineMax();
+			this.painElementalIdleAnimation = '';
+			this.powerFrameIntro = new TimelineMax();
 			this.blastLevel = 0; 
 		},
 		setupArrays: function(){
@@ -75,10 +79,15 @@ $(function() {
 				});
 				game.$hero = $('#hero');
 			;
-			//build floating painElemental monster
+			//build painElemental monster
 			painElemental = $('<div></div>')
-				.attr({class : game.monsters.painElemental.class});
-				game.$painElemental = $(game.monsters.painElemental.class);
+				.attr({class : game.monsters.painElemental.class})
+				.css({
+				  "position": "absolute", 
+				  "top": game.environment.ground,
+				  "right": 0
+				});
+				game.$painElemental = $("." + game.monsters.painElemental.class);
 			//build hero frame
 			heroFrame = $('<span></span>')
 				.attr({class: 'heroFrame'})
@@ -100,13 +109,26 @@ $(function() {
 				  "marginLeft": -game.hero.width
 				});
 			;
-			//run idle sprite
+			//run hero idle sprite
 			setTimeout(function(){
 				game.idleAnimation = TweenMax.to( $("#hero"), 0.9, { backgroundPosition:"-224px 0", ease:SteppedEase.config(3), repeat:-1, paused:false});
+			},100)
+			//run painElemental idle sprite
+			setTimeout(function(){
+				var painElementalIdleAnimation = new TimelineMax({onComplete:complete, onCompleteParams:['{self}']});
+				game.painElementalIdleAnimation = painElementalIdleAnimation;
+				game.painElementalIdleAnimation.to( $(".painElemental"), 1, { top:"-=10px", ease: Power0.easeNone})
+												.to($(".painElemental"), 1, {top:"+=10px", ease: Power0.easeNone});
+												
+				function complete(painElementalIdleAnimation) {
+				  game.painElementalIdleAnimation.restart(); // 0 sets the playhead at the end of the animation
+				}								
 			},100)
 			
 			//render Hero
 			$('#environment').append(hero);
+			//render painElemental
+			$('#environment').append(painElemental);
 			//render HeroFrame
 			$('#environment #hero').append(heroFrame);
 			//render BlastFrame
@@ -126,7 +148,7 @@ $(function() {
 			switch(e.which) {
 				case 37: // left
 				console.log("LEFT");
-				game.heroInactive();
+				game.heroWalk();
 				game.heroLeft();
 				break;
 		
@@ -139,7 +161,7 @@ $(function() {
 		
 				case 39: // right
 				console.log("right");
-				game.heroInactive();
+				game.heroWalk();
 				game.heroRight();
 				break;
 		
@@ -163,13 +185,19 @@ $(function() {
 		},
 		keyUpFunc: function(e){
 			//var charged = game.charged;
-			if ( !game.charged[e.which] ) return;
+			/*if ( !game.charged[e.which] ) return;*/
 			var duration = ( e.timeStamp - game.charged[e.which] ) / 1000;
 			console.log(e.which  + ' was pressed for ' + duration + ' seconds');
 			game.charged[e.which] = 0;
 			
+			// if we were initially walking. run the idle animation
+			if(e.which == 39 || e.which == 37){
+				//move the skin to idle
+				game.heroInactive();
+			}
 			//handle what we do with the blast
 			game.fireBallBlastHandler();
+			
 		
 		},
 		heroInactive: function(){
@@ -186,7 +214,7 @@ $(function() {
 			game.idleAnimation.play();
 			console.log("game.blastLevel: " + game.blastLevel);
 			//reset the charge animations
-			game.powerFrameIntro.pause(0, true);
+			game.powerFrameIntro.pause();
 			if(game.blastLevel == 0){
 				//animate the powerFrame out Early
 				TweenMax.to($('.powerFrame'), 0.2, {opacity: 0, width: "180px", height: "180px", margin: "0 0 0 -58",
@@ -203,8 +231,17 @@ $(function() {
 			$('.powerFrame').attr('class','powerFrame');
 			
 		},
+		heroWalk: function(){
+			//move the skin to walk
+			$('#hero').attr('class', game.hero.walk);
+		},
 		heroJump: function(){
 			console.log("heroJump entered ");
+			//stop all sprites
+			game.spritesStop();
+			//animate jump
+			game.jumpAnimation.play();
+			game.jumpAnimation.to( $("#hero"), 0.9, { backgroundPosition:"-411px 0", ease:SteppedEase.config(7), repeat:-1, paused:false});
 			$('#hero').animate({
 				top: game.hero.jump + 'px'
 			}, 150, function(){
@@ -212,6 +249,8 @@ $(function() {
 				console.log("calling gravity");
 				game.gravity();
 			});
+			//move the skin to walk
+			$('#hero').attr('class', game.hero.jump);
 		},
 		heroLeft: function(){
 			$('#hero').animate({
@@ -295,7 +334,7 @@ $(function() {
 					console.log("blast lvl 2");
 					TweenMax.to($('.powerFrame'), 0.5, {opacity: 0});
 					blastFrame.attr('class', 'blastFrame hero-blast-t2');
-					blastTeir.to(blastFrame, 1, {opacity: 0.8})
+					blastTeir.to(blastFrame, 1.5, {opacity: 0.8})
 						.to(blastFrame, 0.3, {backgroundColor: "white", opacity: 0});
 					break;
 			
@@ -320,6 +359,7 @@ $(function() {
 		spritesStop: function(){
 			//pause all sprites
 			game.idleAnimation.pause();
+			game.jumpAnimation.pause();
 		}
 	} //game obj
 	game.init();
