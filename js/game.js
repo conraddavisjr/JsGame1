@@ -291,7 +291,7 @@ $(function() {
 				$('#environment').append(game.painElemental); //append a new one
 				$('.painElemental-death').attr('class', game.monsters.painElemental.skin); // reset the skin to default
 				game.painElementalDeath.pause(0, true);
-			},2000);
+			},2500);
 			
 			//run painElemental idle sprite
 			setTimeout(function(){
@@ -304,7 +304,7 @@ $(function() {
 				function complete(painElementalIdleAnimation) {
 				  game.painElementalIdleAnimation.restart(); // 0 sets the playhead at the end of the animation
 				}								
-			},2200);
+			},2700);
 		},
 		
 		gravity: function(){
