@@ -9,6 +9,8 @@ $(function() {
 			skin: 'hero-idle',
 			walk: 'hero-walk',
 			jump: 'hero-jump',
+			crouch: 'hero-crouch',
+			jumpHeight: 70,
 			blastTeir1: 1000,
 			blastTeir2: 3500,
 			blastTeir3: 3000,
@@ -16,10 +18,10 @@ $(function() {
 		},
 		monsters: {
 			painElemental:{
-				height: 63,
-				width: 80,
-				skin: 'painElemental.gif',
-				class: 'painElemental'
+				height: 80,
+				width: 90,
+				skin: 'painElemental',
+				death: 'painElemental-death'
 			}
 		},
 		environment:{
@@ -45,6 +47,7 @@ $(function() {
 			this.jumpAnimation = new TimelineMax();
 			this.painElementalIdleAnimation = '';
 			this.powerFrameIntro = new TimelineMax();
+			this.painElementalDeath = new TimelineMax();
 			this.blastLevel = 0; 
 		},
 		setupArrays: function(){
@@ -54,7 +57,7 @@ $(function() {
 			this.$hero = '';
 			this.charged = {};
 			//monsters
-			this.$painElemental = '';
+			this.painElemental = '';
 		},
 		renderGame: function(){
 			//build environment
@@ -80,14 +83,17 @@ $(function() {
 				game.$hero = $('#hero');
 			;
 			//build painElemental monster
-			painElemental = $('<div></div>')
-				.attr({class : game.monsters.painElemental.class})
+			game.painElemental = $('<div></div>')
+				.attr({class : game.monsters.painElemental.skin})
 				.css({
 				  "position": "absolute", 
 				  "top": game.environment.ground,
-				  "right": 0
+				  "right": 0,
+				  "width": game.monsters.painElemental.width,
+				  "height": game.monsters.painElemental.height,
+				  "background-repeat": "no-repeat"
 				});
-				game.$painElemental = $("." + game.monsters.painElemental.class);
+				game.$painElemental = $("." + game.monsters.painElemental.skin);
 			//build hero frame
 			heroFrame = $('<span></span>')
 				.attr({class: 'heroFrame'})
@@ -128,7 +134,7 @@ $(function() {
 			//render Hero
 			$('#environment').append(hero);
 			//render painElemental
-			$('#environment').append(painElemental);
+			$('#environment').append(game.painElemental);
 			//render HeroFrame
 			$('#environment #hero').append(heroFrame);
 			//render BlastFrame
@@ -155,7 +161,6 @@ $(function() {
 				case 38: // up
 				console.log("up");
 				//Call Jump Function
-				game.heroInactive();
 				game.heroJump();
 				break;
 		
@@ -167,7 +172,7 @@ $(function() {
 		
 				case 40: // down
 				console.log("down");
-				game.heroInactive();
+				game.heroCrouch();
 				break;
 				
 				case 70: // "F" Fire!!
@@ -190,6 +195,8 @@ $(function() {
 			console.log(e.which  + ' was pressed for ' + duration + ' seconds');
 			game.charged[e.which] = 0;
 			
+			//pause all sprite animation
+			game.spritesStop();
 			// if we were initially walking. run the idle animation
 			if(e.which == 39 || e.which == 37){
 				//move the skin to idle
@@ -232,25 +239,29 @@ $(function() {
 			
 		},
 		heroWalk: function(){
+			//pause all sprites
+			game.spritesStop();
 			//move the skin to walk
 			$('#hero').attr('class', game.hero.walk);
+			//run walk animation
+			game.idleAnimation.play();
 		},
 		heroJump: function(){
 			console.log("heroJump entered ");
 			//stop all sprites
 			game.spritesStop();
+			//move the skin to jump
+			$('#hero').attr('class', game.hero.jump);
 			//animate jump
-			game.jumpAnimation.play();
-			game.jumpAnimation.to( $("#hero"), 0.9, { backgroundPosition:"-411px 0", ease:SteppedEase.config(7), repeat:-1, paused:false});
+			/*game.jumpAnimation.play();
+			game.jumpAnimation.to( $("#hero"), 0.9, { backgroundPosition:"-411px 0", ease:SteppedEase.config(6), repeat:-1, paused:false});*/
 			$('#hero').animate({
-				top: game.hero.jump + 'px'
+				top: game.hero.jumpHeight + 'px'
 			}, 150, function(){
 				//gravity - fall
 				console.log("calling gravity");
 				game.gravity();
 			});
-			//move the skin to walk
-			$('#hero').attr('class', game.hero.jump);
 		},
 		heroLeft: function(){
 			$('#hero').animate({
@@ -262,6 +273,40 @@ $(function() {
 				left: "+=" + game.hero.speed
 			}, 50);
 		},
+		heroCrouch: function(){
+			$('#hero').attr('class', game.hero.crouch);
+		},
+		
+		//Monsters
+		monsterDeath: function(){
+			console.log("monsterDeath");
+			$('.painElemental').attr('class', game.monsters.painElemental.death);
+			game.painElementalIdleAnimation.pause();
+			game.painElementalDeath.to( $(".painElemental-death"), 1.3, { backgroundPosition:"-426px 0", ease:SteppedEase.config(4), paused:false});
+			game.painElementalDeath.play();
+			//respawn the monster
+			setTimeout(function(){
+				console.log("monster Removal");
+				$('.painElemental-death').remove(); //remove the current monster
+				$('#environment').append(game.painElemental); //append a new one
+				$('.painElemental-death').attr('class', game.monsters.painElemental.skin); // reset the skin to default
+				game.painElementalDeath.pause(0, true);
+			},2000);
+			
+			//run painElemental idle sprite
+			setTimeout(function(){
+				$('.painElemental').css('backgroundPosition','0px 0px'); //reset it's bg position
+				var painElementalIdleAnimation = new TimelineMax({onComplete:complete, onCompleteParams:['{self}']});
+				game.painElementalIdleAnimation = painElementalIdleAnimation;
+				game.painElementalIdleAnimation.to( $(".painElemental"), 1, { top:"-=10px", ease: Power0.easeNone})
+												.to($(".painElemental"), 1, {top:"+=10px", ease: Power0.easeNone});
+												
+				function complete(painElementalIdleAnimation) {
+				  game.painElementalIdleAnimation.restart(); // 0 sets the playhead at the end of the animation
+				}								
+			},2200);
+		},
+		
 		gravity: function(){
 			console.log("gravity called");
 			$('#hero').animate({
@@ -328,6 +373,8 @@ $(function() {
 					game.powerFrameIntro.pause(0, true);
 					blastTeir.to(blastFrame, 1, {opacity: 0.5})
 						.to(blastFrame, 0.3, {backgroundColor: "white", opacity: 0});
+						//This is enough to instantly kill the monster
+						game.monsterDeath();
 					break;
 			
 					case 2: // call blast lvl 2
@@ -336,6 +383,8 @@ $(function() {
 					blastFrame.attr('class', 'blastFrame hero-blast-t2');
 					blastTeir.to(blastFrame, 1.5, {opacity: 0.8})
 						.to(blastFrame, 0.3, {backgroundColor: "white", opacity: 0});
+					//This is enough to instantly kill the monster
+					game.monsterDeath();
 					break;
 			
 					case 3: // call blast lvl 3

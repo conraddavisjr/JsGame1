@@ -9,7 +9,13 @@
   background-image: url("../img/ryu-walk.gif"); }
 
 .hero-jump {
-  background-image: url("../img/ryu-jump.gif"); }
+  background-image: url("../img/ryu-jump.gif");
+  background-position: 0 0 !important;
+}
+.hero-crouch{
+  background-image: url("../img/ryu-crouch.gif");
+  background-position: 0 0 !important;	
+}
 
 .hero-charge-t0 {
   width: 80px !important;
@@ -65,6 +71,8 @@
   margin: 30px 0px 0px 100px !important; }
 
 .painElemental {
-  width: 90px;
-  height: 63px;
-  background-image: url("../img/painElemental.gif"); }
+  background-image: url("../img/painElemental.gif"); 
+}
+.painElemental-death{
+	background-image: url("../img/painElemental-death.gif");
+}
